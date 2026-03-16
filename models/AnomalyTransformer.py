@@ -61,7 +61,7 @@ class AnomalyTransformer(nn.Module):
         self.output_attention = output_attention
 
         # Encoding
-        self.embedding = DataEmbedding(enc_in, d_model, dropout)
+        self.embedding = DataEmbedding(enc_in, d_model, dropout=dropout)
 
         # Encoder
         self.encoder = Encoder(
@@ -81,12 +81,32 @@ class AnomalyTransformer(nn.Module):
 
         self.projection = nn.Linear(d_model, c_out, bias=True)
 
-    def forward(self, x):
-        enc_out = self.embedding(x)
-        enc_out, series, prior, sigmas = self.encoder(enc_out)
+    def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None, attn_mask=None):
+        enc_out = self.embedding(x_enc, x_mark_enc)
+        enc_out, series, prior, sigmas = self.encoder(enc_out, attn_mask=attn_mask)
         enc_out = self.projection(enc_out)
 
         if self.output_attention:
             return enc_out, series, prior, sigmas
         else:
             return enc_out  # [B, L, D]
+
+
+class Model(nn.Module):
+    def __init__(self, configs):
+        super(Model, self).__init__()
+        self.model = AnomalyTransformer(
+            win_size=configs.seq_len,
+            enc_in=configs.enc_in,
+            c_out=configs.c_out,
+            d_model=configs.d_model,
+            n_heads=configs.n_heads,
+            e_layers=configs.e_layers,
+            d_ff=configs.d_ff,
+            dropout=configs.dropout,
+            activation=configs.activation,
+            output_attention=False
+        )
+
+    def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None, mask=None):
+        return self.model(x_enc, x_mark_enc, x_dec, x_mark_dec, mask)

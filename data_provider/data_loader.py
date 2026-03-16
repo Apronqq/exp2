@@ -7,11 +7,23 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
 from utils.timefeatures import time_features
-from data_provider.m4 import M4Dataset, M4Meta
-from data_provider.uea import subsample, interpolate_missing, Normalizer
-from sktime.datasets import load_from_tsfile_to_dataframe
+try:
+    from data_provider.m4 import M4Dataset, M4Meta
+except ImportError:
+    M4Dataset, M4Meta = None, None
+try:
+    from data_provider.uea import subsample, interpolate_missing, Normalizer
+except ImportError:
+    subsample, interpolate_missing, Normalizer = None, None, None
+try:
+    from sktime.datasets import load_from_tsfile_to_dataframe
+except ImportError:
+    load_from_tsfile_to_dataframe = None
 import warnings
-from utils.augmentation import run_augmentation_single
+try:
+    from utils.augmentation import run_augmentation_single
+except ImportError:
+    run_augmentation_single = None
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
 warnings.filterwarnings('ignore')
@@ -94,6 +106,8 @@ class Dataset_ETT_hour(Dataset):
         self.data_y = data[border1:border2]
 
         if self.set_type == 0 and self.args.augmentation_ratio > 0:
+            if run_augmentation_single is None:
+                raise ImportError("Augmentation utilities are missing. Please add utils/augmentation.py.")
             self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
 
         self.data_stamp = data_stamp
@@ -335,6 +349,8 @@ class Dataset_M4(Dataset):
                  features='S', data_path='ETTh1.csv',
                  target='OT', scale=False, inverse=False, timeenc=0, freq='15min',
                  seasonal_patterns='Yearly'):
+        if M4Dataset is None or M4Meta is None:
+            raise ImportError("M4 dependencies are missing. Please add data_provider/m4.py to use m4 data.")
         # size [seq_len, label_len, pred_len]
         # init
         self.features = features
@@ -736,6 +752,8 @@ class UEAloader(Dataset):
     """
 
     def __init__(self, args, root_path, file_list=None, limit_size=None, flag=None):
+        if load_from_tsfile_to_dataframe is None or Normalizer is None or subsample is None or interpolate_missing is None:
+            raise ImportError("UEA dependencies are missing. Please install sktime and provide data_provider/uea.py.")
         self.args = args
         self.root_path = root_path
         self.flag = flag

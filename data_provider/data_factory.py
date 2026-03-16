@@ -1,6 +1,9 @@
 from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
     MSLSegLoader, SMAPSegLoader, SMDSegLoader, SWATSegLoader, UEAloader
-from data_provider.uea import collate_fn
+try:
+    from data_provider.uea import collate_fn
+except ImportError:
+    collate_fn = None
 from torch.utils.data import DataLoader
 
 data_dict = {
@@ -45,6 +48,8 @@ def data_provider(args, flag):
             drop_last=drop_last)
         return data_set, data_loader
     elif args.task_name == 'classification':
+        if collate_fn is None:
+            raise ImportError("Classification dependencies are missing. Please add data_provider/uea.py.")
         drop_last = False
         data_set = Data(
             args = args,
