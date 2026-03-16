@@ -1,7 +1,6 @@
 import os
 import torch
 import importlib
-import pkgutil  
 
 # Just put your model files under models/ folder
 # e.g., models/Transformer.py, models/LSTM.py, etc.
@@ -109,4 +108,3 @@ class LazyModelDict(dict):
 
         self[key] = model_class
         return model_class
-
