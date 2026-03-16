@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 from torch.utils.data import Dataset
 
 HUGGINGFACE_REPO = "thuml/Time-Series-Library"
+VALIDATION_SPLIT_RATIO = 0.8
 
 
 class BaseSegLoader(Dataset):
@@ -19,7 +20,7 @@ class BaseSegLoader(Dataset):
         self.test = test_data
         self.test_labels = test_labels
         data_len = len(self.train)
-        self.val = self.train[int(data_len * 0.8):]
+        self.val = self.train[int(data_len * VALIDATION_SPLIT_RATIO):]
         print("test:", self.test.shape)
         print("train:", self.train.shape)
 

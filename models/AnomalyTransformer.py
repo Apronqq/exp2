@@ -95,7 +95,7 @@ class AnomalyTransformer(nn.Module):
 class Model(nn.Module):
     def __init__(self, configs):
         super(Model, self).__init__()
-        self.output_attention = bool(getattr(configs, 'output_attention', False))
+        self.output_attention = getattr(configs, 'output_attention', False)
         self.model = AnomalyTransformer(
             win_size=configs.seq_len,
             enc_in=configs.enc_in,

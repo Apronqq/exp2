@@ -54,7 +54,10 @@ def get_args():
 
     args = parser.parse_args()
     if args.task_name != 'anomaly_detection':
-        raise ValueError('Only anomaly_detection is supported in this simplified repository.')
+        raise ValueError(
+            'Only anomaly_detection is supported in this simplified repository. '
+            'Set --task_name anomaly_detection or use the original repository for other tasks.'
+        )
     return args
 
 
