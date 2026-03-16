@@ -95,6 +95,7 @@ class AnomalyTransformer(nn.Module):
 class Model(nn.Module):
     def __init__(self, configs):
         super(Model, self).__init__()
+        self.output_attention = bool(getattr(configs, 'output_attention', False))
         self.model = AnomalyTransformer(
             win_size=configs.seq_len,
             enc_in=configs.enc_in,
@@ -105,8 +106,8 @@ class Model(nn.Module):
             d_ff=configs.d_ff,
             dropout=configs.dropout,
             activation=configs.activation,
-            output_attention=False
+            output_attention=self.output_attention
         )
 
-    def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None, mask=None):
-        return self.model(x_enc, x_mark_enc, x_dec, x_mark_dec, mask)
+    def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None, attn_mask=None):
+        return self.model(x_enc, x_mark_enc, x_dec, x_mark_dec, attn_mask)

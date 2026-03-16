@@ -39,6 +39,12 @@ class Exp_Anomaly_Detection(Exp_Basic):
     def _select_criterion(self):
         criterion = nn.MSELoss()
         return criterion
+    
+    def _forward(self, batch_x):
+        outputs = self.model(batch_x, None, None, None)
+        if isinstance(outputs, (tuple, list)):
+            outputs = outputs[0]
+        return outputs
 
     def vali(self, vali_data, vali_loader, criterion):
         total_loss = []
@@ -47,7 +53,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
             for i, (batch_x, _) in enumerate(vali_loader):
                 batch_x = batch_x.float().to(self.device)
 
-                outputs = self.model(batch_x, None, None, None)
+                outputs = self._forward(batch_x)
 
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, :, f_dim:]
@@ -89,7 +95,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
 
                 batch_x = batch_x.float().to(self.device)
 
-                outputs = self.model(batch_x, None, None, None)
+                outputs = self._forward(batch_x)
 
                 f_dim = -1 if self.args.features == 'MS' else 0
                 outputs = outputs[:, :, f_dim:]
@@ -145,7 +151,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
             for i, (batch_x, batch_y) in enumerate(train_loader):
                 batch_x = batch_x.float().to(self.device)
                 # reconstruction
-                outputs = self.model(batch_x, None, None, None)
+                outputs = self._forward(batch_x)
                 # criterion
                 score = torch.mean(self.anomaly_criterion(batch_x, outputs), dim=-1)
                 score = score.detach().cpu().numpy()
@@ -160,7 +166,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
         for i, (batch_x, batch_y) in enumerate(test_loader):
             batch_x = batch_x.float().to(self.device)
             # reconstruction
-            outputs = self.model(batch_x, None, None, None)
+            outputs = self._forward(batch_x)
             # criterion
             score = torch.mean(self.anomaly_criterion(batch_x, outputs), dim=-1)
             score = score.detach().cpu().numpy()
